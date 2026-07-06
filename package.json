@@ -1,0 +1,64 @@
+{
+  "name": "ai-mosaic",
+  "version": "0.1.0",
+  "description": "MCP server for Angular architecture, code quality, and version-aware review — reviewer, coder, and architect for Angular 19+.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Himakar Reddy <himakarinv@gmail.com>",
+  "bin": {
+    "ai-mosaic": "bin/ai-mosaic.js",
+    "ai-mosaic-setup": "bin/ai-mosaic-setup.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "standards",
+    "templates",
+    "scripts/setup.mjs",
+    "scripts/copy-standards.mjs",
+    "ai-mosaic.config.example.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc && node scripts/copy-standards.mjs",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "angular",
+    "storybook",
+    "cursor",
+    "copilot",
+    "claude",
+    "code-review",
+    "architecture",
+    "model-context-protocol",
+    "ai-mosaic"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/himakarinv-stack/ai-mosaic.git"
+  },
+  "bugs": {
+    "url": "https://github.com/himakarinv-stack/ai-mosaic/issues"
+  },
+  "homepage": "https://github.com/himakarinv-stack/ai-mosaic#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}
