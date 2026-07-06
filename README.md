@@ -33,8 +33,16 @@ Or as a dev dependency:
 
 ```bash
 npm install --save-dev @himakarinv-stack/ai-mosaic
-npx ai-mosaic-setup
+npm run ai-mosaic:setup
 ```
+
+Setup modes (auto-detected):
+
+- **installed** — uses `node_modules/@himakarinv-stack/ai-mosaic` (recommended for production)
+- **npx** — `--npx` flag or when package not installed
+- **local** — `--local` when developing ai-mosaic itself
+
+Flags: `--skip-instructions` (keep custom AGENTS.md), `--host cursor|copilot|all`
 
 Package page: https://github.com/himakarinv-stack/ai-mosaic/pkgs/npm/ai-mosaic
 

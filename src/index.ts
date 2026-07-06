@@ -49,7 +49,7 @@ const qualityDomainSchema = z.enum([
 
 const server = new McpServer({
   name: "ai-mosaic",
-  version: "0.1.0",
+  version: "0.1.1",
 });
 
 function resolveWorkspace(workspaceRoot?: string): string {

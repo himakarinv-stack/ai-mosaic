@@ -3,3 +3,8 @@ dist/
 *.log
 .DS_Store
 .tools/
+
+# Sibling projects in local workspace (separate git repos)
+/storybook/
+/hrms/
+/ai-mosaic/

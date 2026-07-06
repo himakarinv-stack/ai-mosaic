@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/himakarinv-stack/ai-mosaic/main/ai-mosaic.schema.json",
   "severity": "balanced",
   "ignore": ["**/legacy/**", "**/dist/**", "**/node_modules/**"],
-  "strictRules": ["onpush", "signals-for-state"],
+  "strictRules": ["missing-onpush", "missing-track"],
   "storybook": {
     "storiesGlob": "**/*.stories.@(ts|tsx)",
     "requireAutodocs": true
