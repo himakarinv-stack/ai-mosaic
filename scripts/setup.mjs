@@ -12,7 +12,8 @@ import { fileURLToPath } from "node:url";
 import { platform } from "node:os";
 
 const SERVER_NAME = "ai-mosaic";
-const NPM_PACKAGE = "ai-mosaic";
+const NPM_PACKAGE = "@himakarinv-stack/ai-mosaic";
+const GH_PACKAGES_REGISTRY = "https://npm.pkg.github.com";
 
 function resolvePackageRoot() {
   const here = dirname(fileURLToPath(import.meta.url));
@@ -71,7 +72,10 @@ function mergeJson(path, mergeFn) {
 }
 
 function npxServerEntry(npxCommand) {
-  return { command: npxCommand, args: ["-y", NPM_PACKAGE] };
+  return {
+    command: npxCommand,
+    args: ["-y", "--registry", GH_PACKAGES_REGISTRY, NPM_PACKAGE],
+  };
 }
 
 function localServerEntry(packageRoot, nodeCommand) {

@@ -6,16 +6,37 @@ Works with Cursor, GitHub Copilot, Claude Code, and Claude Desktop. Includes fir
 
 ## Install into an Angular repo
 
+Published on **GitHub Packages** (same pattern as `@himakarinv-stack/storybook-components`).
+
+### 1. Authenticate (one-time per machine)
+
+Create a GitHub PAT with `read:packages` (and `repo` if the package is private), then add to `~/.npmrc`:
+
+```
+@himakarinv-stack:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+```
+
+Or use the CLI token:
+
 ```bash
-npx ai-mosaic-setup
+npm config set //npm.pkg.github.com/:_authToken $(gh auth token)
+```
+
+### 2. Install and set up
+
+```bash
+npx --registry=https://npm.pkg.github.com @himakarinv-stack/ai-mosaic-setup
 ```
 
 Or as a dev dependency:
 
 ```bash
-npm install --save-dev ai-mosaic
+npm install --save-dev @himakarinv-stack/ai-mosaic
 npx ai-mosaic-setup
 ```
+
+Package page: https://github.com/himakarinv-stack/ai-mosaic/pkgs/npm/ai-mosaic
 
 ## MCP configuration (manual)
 
@@ -26,7 +47,7 @@ npx ai-mosaic-setup
   "mcpServers": {
     "ai-mosaic": {
       "command": "npx",
-      "args": ["-y", "ai-mosaic"]
+      "args": ["-y", "--registry", "https://npm.pkg.github.com", "@himakarinv-stack/ai-mosaic"]
     },
     "angular-cli": {
       "command": "npx",

@@ -1,5 +1,5 @@
 {
-  "name": "ai-mosaic",
+  "name": "@himakarinv-stack/ai-mosaic",
   "version": "0.1.0",
   "description": "MCP server for Angular architecture, code quality, and version-aware review — reviewer, coder, and architect for Angular 19+.",
   "type": "module",
@@ -58,7 +58,6 @@
   },
   "homepage": "https://github.com/himakarinv-stack/ai-mosaic#readme",
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org"
+    "registry": "https://npm.pkg.github.com"
   }
 }

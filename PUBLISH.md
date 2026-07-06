@@ -1,47 +1,38 @@
-# Publish ai-mosaic
+# Publish ai-mosaic to GitHub Packages
 
-Run these steps from `D:\practise\mvp` after authenticating.
+Package: `@himakarinv-stack/ai-mosaic`  
+Registry: https://npm.pkg.github.com  
+Package page: https://github.com/himakarinv-stack/ai-mosaic/pkgs/npm/ai-mosaic
 
-## 1. GitHub (one-time auth)
-
-```powershell
-.\.tools\bin\gh.exe auth login
-```
-
-Choose: GitHub.com → HTTPS → Login with a browser → authorize **himakarinv-stack** account.
-
-## 2. Create repo and push
+## Publish locally
 
 ```powershell
-.\.tools\bin\gh.exe repo create himakarinv-stack/ai-mosaic --public --source=. --remote=origin --push --description "MCP server for Angular architecture, code quality, and version-aware review"
-```
-
-If the repo already exists:
-
-```powershell
-git push -u origin main
-```
-
-## 3. npm (one-time auth)
-
-```powershell
-npm login
-```
-
-Use the npm account tied to **himakarinv@gmail.com**.
-
-## 4. Publish to npm
-
-```powershell
+cd D:\practise\mvp
+$env:NODE_AUTH_TOKEN = .\.tools\bin\gh.exe auth token
 npm run build
-npm publish --access public
+npm publish
 ```
 
-## Verify
+Requires `gh auth login` as **himakarinv-stack** with `write:packages` scope.
 
-- GitHub: https://github.com/himakarinv-stack/ai-mosaic
-- npm: https://www.npmjs.com/package/ai-mosaic
+## Publish via GitHub Release (CI)
 
-```powershell
-npx ai-mosaic-setup --help
+1. Push a tag: `git tag v0.1.0 && git push origin v0.1.0`
+2. Create a GitHub Release from that tag
+3. Workflow `.github/workflows/publish.yml` publishes automatically
+
+## Consumer install
+
+Add to `~/.npmrc`:
+
+```
+@himakarinv-stack:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+```
+
+Then:
+
+```bash
+npm install @himakarinv-stack/ai-mosaic
+npx ai-mosaic-setup
 ```
