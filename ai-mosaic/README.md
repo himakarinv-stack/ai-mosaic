@@ -42,7 +42,7 @@ Setup modes (auto-detected):
 - **npx** — `--npx` flag or when package not installed
 - **local** — `--local` when developing ai-mosaic itself
 
-Flags: `--skip-instructions` (keep custom AGENTS.md), `--host cursor|copilot|all`
+Flags: `--skip-instructions` (keep custom AGENTS.md), `--host cursor|copilot|all`, `--with-git-conventions` (husky/commitlint/CI)
 
 Package page: https://github.com/himakarinv-stack/ai-mosaic/pkgs/npm/ai-mosaic
 
@@ -104,6 +104,25 @@ audit_modernization → plan_refactor → apply_changes
 | `plan_refactor` | Step-by-step refactor plan |
 | `apply_changes` | Write files (requires confirm:true) |
 | `run_angular_target` | Optional ng lint/test/build bridge |
+| `get_git_conventions` | Branch/commit/PR naming rules for this workspace |
+| `validate_branch_name` | Pass/fail check for a proposed branch name |
+| `validate_commit_message` | Pass/fail check for Conventional Commits |
+| `scaffold_git_conventions` | Install husky/commitlint/CI files (`confirm:true`) |
+
+## Git conventions (consumer repos)
+
+After MCP is installed, agents should call `validate_branch_name` / `validate_commit_message` before git operations.
+
+For **hard** local + CI enforcement in the Angular repo:
+
+```bash
+npx ai-mosaic-setup --with-git-conventions
+# then: npm install
+```
+
+Or via MCP: `scaffold_git_conventions` → confirm write → merge package.json deps → `npm install`.
+
+Protect `main` on GitHub so the **Conventions** check is required.
 
 ## Optional project config
 

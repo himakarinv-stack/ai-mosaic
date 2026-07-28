@@ -10,3 +10,4 @@ applyTo: "**/*.{ts,html,scss}"
 - Presentational components: Storybook with autodocs
 - No nested subscribe; no side effects in map()
 - PR findings use BLOCKER / HIGH / MEDIUM / LOW severity
+- Before git branch/commit/PR: validate via ai-mosaic `validate_branch_name` / `validate_commit_message`

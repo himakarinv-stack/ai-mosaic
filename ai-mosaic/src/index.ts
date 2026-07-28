@@ -28,6 +28,14 @@ import {
 } from "./codegen/templates.js";
 import { applyChanges, formatApplyResult } from "./codegen/apply.js";
 import { runModernizationAudit, formatAudit, runAngularTarget } from "./audit/modernization.js";
+import {
+  getGitConventionsGuide,
+  validateBranchName,
+  validateCommitMessage,
+  formatValidation,
+  scaffoldGitConventionFiles,
+  formatScaffoldPreview,
+} from "./git/conventions.js";
 
 const STANDARDS_DIR = resolveStandardsDir();
 
@@ -45,6 +53,7 @@ const qualityDomainSchema = z.enum([
   "anti-patterns",
   "scaffolding",
   "modernization",
+  "git-conventions",
 ] as const);
 
 const server = new McpServer({
@@ -373,6 +382,86 @@ server.tool(
     const root = resolveWorkspace(workspaceRoot);
     const config = loadConfig(root);
     const text = runAngularTarget(root, config, target, project);
+    return { content: [{ type: "text" as const, text }] };
+  }
+);
+
+// ─── Git conventions (consumer workspaces) ─────────────────────────────────
+
+server.tool(
+  "get_git_conventions",
+  "Branch, commit, and PR naming rules for this workspace. Call before git branch/commit/PR.",
+  {},
+  async () => ({
+    content: [{ type: "text" as const, text: getGitConventionsGuide() }],
+  })
+);
+
+server.tool(
+  "validate_branch_name",
+  "Validate a git branch name against ai-mosaic conventions. Call before creating or pushing a branch.",
+  {
+    branchName: z.string().describe("Branch name e.g. feat/user-profile"),
+  },
+  async ({ branchName }) => ({
+    content: [
+      {
+        type: "text" as const,
+        text: formatValidation("branch", validateBranchName(branchName)),
+      },
+    ],
+  })
+);
+
+server.tool(
+  "validate_commit_message",
+  "Validate a commit message (Conventional Commits). Call before git commit.",
+  {
+    message: z.string().describe("Full commit message; subject line is validated"),
+  },
+  async ({ message }) => ({
+    content: [
+      {
+        type: "text" as const,
+        text: formatValidation("commit", validateCommitMessage(message)),
+      },
+    ],
+  })
+);
+
+server.tool(
+  "scaffold_git_conventions",
+  "Install husky/commitlint/CI/CONTRIBUTING for hard git enforcement. Preview by default; set confirm:true to write.",
+  {
+    workspaceRoot: z.string().optional(),
+    confirm: z
+      .boolean()
+      .optional()
+      .default(false)
+      .describe("Must be true to write files (skips existing)"),
+  },
+  async ({ workspaceRoot, confirm }) => {
+    const files = scaffoldGitConventionFiles();
+    if (!confirm) {
+      return {
+        content: [{ type: "text" as const, text: formatScaffoldPreview(files) }],
+      };
+    }
+
+    const result = applyChanges(
+      resolveWorkspace(workspaceRoot),
+      files.map((f) => ({ path: f.path, content: f.content })),
+      true
+    );
+    const text = [
+      formatApplyResult(result),
+      "",
+      "## Next steps",
+      "1. Merge scripts/devDependencies from `ai-mosaic.git-conventions.package.json.snippet.md` into package.json",
+      "2. Run `npm install` so husky hooks install",
+      "3. Enable GitHub ruleset/branch protection requiring check **Branch, commits, and PR title**",
+      "4. Delete the snippet markdown file after merging",
+    ].join("\n");
     return { content: [{ type: "text" as const, text }] };
   }
 );

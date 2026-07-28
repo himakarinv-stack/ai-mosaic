@@ -28,6 +28,7 @@ function parseArgs(argv) {
     npxCommand: "npx",
     skipInstructions: false,
     withAngularCli: true,
+    withGitConventions: false,
   };
 
   for (let i = 2; i < argv.length; i++) {
@@ -38,6 +39,7 @@ function parseArgs(argv) {
     else if (arg === "--npx") args.mode = "npx";
     else if (arg === "--skip-instructions") args.skipInstructions = true;
     else if (arg === "--no-angular-cli") args.withAngularCli = false;
+    else if (arg === "--with-git-conventions") args.withGitConventions = true;
     else if (arg === "--node" && argv[i + 1]) args.nodeCommand = argv[++i];
     else if (arg === "--npx-cmd" && argv[i + 1]) args.npxCommand = argv[++i];
     else if (arg === "--help") {
@@ -45,14 +47,15 @@ function parseArgs(argv) {
 ai-mosaic-setup — install MCP for Cursor, GitHub Copilot, Claude Code
 
 Options:
-  --target              Angular workspace root (default: cwd)
-  --host                cursor | copilot | claude-code | claude-desktop | all
-  --local               Force local package dist/ (dev of ai-mosaic repo)
-  --npx                 Force npx + GitHub Packages (no local node_modules)
-  --skip-instructions   Do not overwrite AGENTS.md / CLAUDE.md / copilot files
-  --no-angular-cli      Skip adding @angular/cli mcp server
-  --node                Node executable
-  --npx-cmd             npx executable
+  --target                 Angular workspace root (default: cwd)
+  --host                   cursor | copilot | claude-code | claude-desktop | all
+  --local                  Force local package dist/ (dev of ai-mosaic repo)
+  --npx                    Force npx + GitHub Packages (no local node_modules)
+  --skip-instructions      Do not overwrite AGENTS.md / CLAUDE.md / copilot files
+  --no-angular-cli         Skip adding @angular/cli mcp server
+  --with-git-conventions   Install husky/commitlint/CI branch+commit enforcement
+  --node                   Node executable
+  --npx-cmd                npx executable
 
 Modes (default: auto):
   auto   — use node_modules/@himakarinv-stack/ai-mosaic when installed, else npx
@@ -203,6 +206,155 @@ function setupClaudeDesktop(server, nodeCommand, npxCommand, mode, packageRoot, 
   console.log("Restart Claude Desktop after editing:", configPath);
 }
 
+function writeIfMissing(path, content) {
+  if (existsSync(path)) {
+    console.log("Skip (exists)", path);
+    return false;
+  }
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, content, "utf-8");
+  console.log("Wrote", path);
+  return true;
+}
+
+function mergePackageJsonGitConventions(target) {
+  const pkgPath = join(target, "package.json");
+  if (!existsSync(pkgPath)) {
+    console.warn("No package.json at target — skip git-convention dependency merge");
+    return;
+  }
+
+  const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+  pkg.scripts = {
+    ...(pkg.scripts ?? {}),
+    prepare: pkg.scripts?.prepare ?? "husky",
+    "lint:commit": pkg.scripts?.["lint:commit"] ?? "commitlint --last --verbose",
+    "lint:branch": pkg.scripts?.["lint:branch"] ?? "node scripts/check-branch-name.mjs",
+  };
+  pkg.devDependencies = {
+    ...(pkg.devDependencies ?? {}),
+    "@commitlint/cli": pkg.devDependencies?.["@commitlint/cli"] ?? "^19.8.1",
+    "@commitlint/config-conventional":
+      pkg.devDependencies?.["@commitlint/config-conventional"] ?? "^19.8.1",
+    husky: pkg.devDependencies?.husky ?? "^9.1.7",
+  };
+  writeJson(pkgPath, pkg);
+  console.log("Merged git-convention scripts/devDependencies into package.json");
+}
+
+function installGitConventions(target) {
+  const branchScript = `#!/usr/bin/env node
+const ALLOWED = /^(feat|fix|chore|docs|refactor|test|ci|release)\\/[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
+const branch = (process.argv[2] ?? "").trim();
+if (!branch) {
+  console.error("Usage: node scripts/check-branch-name.mjs <branch-name>");
+  process.exit(1);
+}
+if (branch === "main" || branch === "master") {
+  console.error(\`Branch "\${branch}" is protected. Use type/kebab-description. See CONTRIBUTING.md.\`);
+  process.exit(1);
+}
+if (!ALLOWED.test(branch)) {
+  console.error(
+    [
+      \`Invalid branch name: "\${branch}"\`,
+      "Expected: <type>/<short-kebab-description>",
+      "Types: feat | fix | chore | docs | refactor | test | ci | release",
+      "See CONTRIBUTING.md.",
+    ].join("\\n")
+  );
+  process.exit(1);
+}
+console.log(\`Branch name OK: \${branch}\`);
+`;
+
+  const commitlint = `/** @type {import('@commitlint/types').UserConfig} */
+const types = ["feat", "fix", "chore", "docs", "refactor", "test", "ci", "release"];
+
+module.exports = {
+  extends: ["@commitlint/config-conventional"],
+  rules: {
+    "type-enum": [2, "always", types],
+    "type-case": [2, "always", "lower-case"],
+    "subject-case": [0],
+    "subject-empty": [2, "never"],
+    "subject-full-stop": [2, "never", "."],
+    "header-max-length": [2, "always", 72],
+  },
+};
+`;
+
+  const contributing = `# Contributing
+
+Branch and commit names follow **ai-mosaic** git conventions.
+
+## Branches
+
+\`<type>/<short-kebab-description>\`
+
+Types: feat | fix | chore | docs | refactor | test | ci | release
+
+## Commits
+
+\`<type>(optional-scope): <imperative summary>\`
+
+No trailing period. Subject ≤ 72 characters.
+
+## Enforcement
+
+- Local: husky \`commit-msg\` + \`pre-push\` (run \`npm install\`)
+- CI: GitHub Actions workflow **Conventions**
+- Agents: MCP \`validate_branch_name\`, \`validate_commit_message\`, \`get_git_conventions\`
+`;
+
+  const workflow = `name: Conventions
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  branch-and-commits:
+    name: Branch, commits, and PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Validate branch name
+        env:
+          BRANCH: \${{ github.head_ref }}
+        run: node scripts/check-branch-name.mjs "$BRANCH"
+      - name: Validate PR title
+        env:
+          TITLE: \${{ github.event.pull_request.title }}
+        run: echo "$TITLE" | npx --no -- commitlint
+      - name: Validate commit messages
+        run: npx --no -- commitlint --from "origin/\${{ github.base_ref }}" --to HEAD --verbose
+`;
+
+  writeIfMissing(join(target, "CONTRIBUTING.md"), contributing);
+  writeIfMissing(join(target, "commitlint.config.cjs"), commitlint);
+  writeIfMissing(join(target, "scripts/check-branch-name.mjs"), branchScript);
+  writeIfMissing(join(target, ".husky/commit-msg"), `#!/usr/bin/env sh\nnpx --no -- commitlint --edit "$1"\n`);
+  writeIfMissing(
+    join(target, ".husky/pre-push"),
+    `#!/usr/bin/env sh\nbranch="$(git branch --show-current)"\nnode "$(dirname -- "$0")/../scripts/check-branch-name.mjs" "$branch"\n`
+  );
+  writeIfMissing(join(target, ".github/workflows/conventions.yml"), workflow);
+  mergePackageJsonGitConventions(target);
+  console.log("Git conventions installed. Run npm install to activate husky hooks.");
+}
+
 function installInstructions(target, packageRoot) {
   const templatesDir = join(packageRoot, "templates");
   if (!existsSync(templatesDir)) return;
@@ -242,7 +394,8 @@ function expandHosts(host) {
 
 const PACKAGE_ROOT = resolvePackageRoot();
 const args = parseArgs(process.argv);
-const { target, host, mode, nodeCommand, npxCommand, skipInstructions, withAngularCli } = args;
+const { target, host, mode, nodeCommand, npxCommand, skipInstructions, withAngularCli, withGitConventions } =
+  args;
 const { mode: resolvedMode, server } = resolveServerConfig(mode, PACKAGE_ROOT, target, nodeCommand, npxCommand);
 const hosts = expandHosts(host);
 
@@ -268,16 +421,21 @@ for (const h of hosts) {
   }
 }
 
+if (withGitConventions) {
+  installGitConventions(target);
+}
+
 console.log(`
 Done (${resolvedMode} mode).
 
-MCP: ai-mosaic${withAngularCli ? " + angular-cli" : ""}
+MCP: ai-mosaic${withAngularCli ? " + angular-cli" : ""}${withGitConventions ? " + git-conventions" : ""}
 
 ai-mosaic workflows:
-  • PR review      — review_pr_diff, scan_violations, review_architecture
-  • Scaffolding    — generate_feature, generate_component, generate_story, apply_changes
-  • Modernization  — audit_modernization, plan_refactor
-  • Optional CLI   — run_angular_target (lint/test/build)
+  • PR review         — review_pr_diff, scan_violations, review_architecture
+  • Scaffolding       — generate_feature, generate_component, generate_story, apply_changes
+  • Modernization     — audit_modernization, plan_refactor
+  • Git conventions   — get_git_conventions, validate_branch_name, validate_commit_message
+  • Optional CLI      — run_angular_target (lint/test/build)
 
 Project config: ai-mosaic.config.json (optional)
-`);
+${withGitConventions ? "\nNext: npm install (husky) and protect main with the Conventions check.\n" : ""}`);
