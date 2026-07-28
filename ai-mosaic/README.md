@@ -171,6 +171,8 @@ Branch and commit names follow a fixed structure — see [CONTRIBUTING.md](../CO
 
 Examples: `feat/v22-angular-profile`, `docs: document branch and commit conventions`.
 
+Local hooks + CI enforce the rules (`npm install` at the repo root).
+
 ## License
 
 MIT
