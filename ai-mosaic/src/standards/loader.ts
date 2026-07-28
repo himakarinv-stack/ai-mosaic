@@ -16,7 +16,8 @@ export type QualityDomain =
   | "review-format"
   | "anti-patterns"
   | "scaffolding"
-  | "modernization";
+  | "modernization"
+  | "git-conventions";
 
 const SHARED_FILES: Partial<Record<QualityDomain, string>> = {
   architecture: "shared/01-architecture.md",
@@ -30,6 +31,7 @@ const SHARED_FILES: Partial<Record<QualityDomain, string>> = {
   "anti-patterns": "shared/09-anti-patterns.md",
   scaffolding: "shared/10-scaffolding.md",
   modernization: "shared/11-modernization.md",
+  "git-conventions": "shared/12-git-conventions.md",
   storybook: "storybook/01-storybook-standards.md",
 };
 
@@ -53,6 +55,7 @@ export const DOMAIN_SUMMARIES: Record<QualityDomain, string> = {
   "anti-patterns": "Consolidated reject list for reviews and audits",
   scaffolding: "Feature and component generation conventions",
   modernization: "Audit checklist and migration priorities by version",
+  "git-conventions": "Branch, commit, and PR naming for this workspace",
 };
 
 export function readGuide(
@@ -205,6 +208,10 @@ export function explainPattern(
     ["feature", "scaffolding"],
     ["moderniz", "modernization"],
     ["migrate", "modernization"],
+    ["branch", "git-conventions"],
+    ["commit", "git-conventions"],
+    ["conventional", "git-conventions"],
+    ["git convention", "git-conventions"],
   ];
 
   const match = domainMap.find(([key]) => normalized.includes(key));
