@@ -146,6 +146,12 @@ npm link
 cd ../my-angular-app && npx ai-mosaic-setup --local
 ```
 
+## Contributing
+
+Branch and commit names follow a fixed structure — see [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+Examples: `feat/v22-angular-profile`, `docs: document branch and commit conventions`.
+
 ## License
 
 MIT
