@@ -17,9 +17,10 @@ Requires `gh auth login` as **himakarinv-stack** with `write:packages` scope.
 
 ## Publish via GitHub Release (CI)
 
-1. Push a tag: `git tag v0.1.0 && git push origin v0.1.0`
-2. Create a GitHub Release from that tag
-3. Workflow `.github/workflows/publish.yml` publishes automatically
+1. Use a `release/<version>` branch and a conventional `release: <version>` commit (see [CONTRIBUTING.md](../CONTRIBUTING.md))
+2. Push a tag: `git tag v0.1.0 && git push origin v0.1.0`
+3. Create a GitHub Release from that tag
+4. Workflow `.github/workflows/publish.yml` publishes automatically
 
 ## Consumer install
 
