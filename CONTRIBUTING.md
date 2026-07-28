@@ -80,3 +80,38 @@ Push the tag and publish a GitHub Release — see [ai-mosaic/PUBLISH.md](./ai-mo
 - Branch name must match the structure above
 - PR title should match the primary commit style (`type(scope): summary`)
 - Squash-merge preferred so `main` history stays conventional
+
+## Enforcement
+
+These rules are **enforced**, not optional.
+
+### Local (husky)
+
+From the **repository root** (where this file lives):
+
+```bash
+npm install
+```
+
+That installs hooks:
+
+| Hook | Blocks when |
+|------|-------------|
+| `commit-msg` | Commit subject is not Conventional Commits / wrong type |
+| `pre-push` | Branch name is `main` or does not match `type/kebab-description` |
+
+Invalid commits and pushes are rejected on your machine before they reach GitHub.
+
+### CI (required check)
+
+On every pull request, workflow **Conventions** validates:
+
+1. Branch name
+2. PR title
+3. Every commit on the PR
+
+PRs that fail this check cannot merge once branch protection requires it.
+
+### `main` protection
+
+Direct pushes to `main` are blocked (local pre-push + GitHub branch protection). Always open a typed branch and PR.

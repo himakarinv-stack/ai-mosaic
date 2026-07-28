@@ -1,0 +1,43 @@
+name: Conventions
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  branch-and-commits:
+    name: Branch, commits, and PR title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install repo tooling
+        run: npm ci
+
+      - name: Validate branch name
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: node scripts/check-branch-name.mjs "$BRANCH"
+
+      - name: Validate PR title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "$TITLE" | npx --no -- commitlint
+
+      - name: Validate commit messages
+        run: |
+          npx --no -- commitlint --from "origin/${{ github.base_ref }}" --to HEAD --verbose
