@@ -254,10 +254,11 @@ export function reviewPrDiff(changedFiles: string[], extensions: string[]): stri
     `Extensions: ${extensions.join(", ") || "none"}`,
     "",
     "## Steps",
-    "1. Call `get_review_sections_for_diff` with extensions",
-    "2. Run `scan_violations` on each .ts/.html/.stories file",
+    "1. Call `audit_changed_files` with the same file list (reads workspace or pass fileContents).",
+    "2. Call `get_review_sections_for_diff` with extensions",
     "3. Apply `review_architecture` checklist",
     "4. Output findings using review-format severity classes",
-    "5. For BLOCKER/HIGH — provide fix snippet or plan_refactor steps",
+    "5. Give actionable feedback to the author — what to change and why (best practices)",
+    "6. For BLOCKER/HIGH — provide fix snippet or plan_refactor steps",
   ].join("\n");
 }

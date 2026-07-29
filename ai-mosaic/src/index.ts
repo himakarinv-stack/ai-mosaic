@@ -20,6 +20,7 @@ import {
   reviewArchitectureNotes,
   reviewPrDiff,
 } from "./review/scanner.js";
+import { auditChangedFiles, formatAuditReport } from "./review/audit.js";
 import {
   generateComponent,
   generateFeature,
@@ -49,6 +50,8 @@ const qualityDomainSchema = z.enum([
   "security",
   "testing",
   "storybook",
+  "html-css",
+  "tooling-lint",
   "review-format",
   "anti-patterns",
   "scaffolding",
@@ -58,7 +61,7 @@ const qualityDomainSchema = z.enum([
 
 const server = new McpServer({
   name: "ai-mosaic",
-  version: "0.1.1",
+  version: "0.2.0",
 });
 
 function resolveWorkspace(workspaceRoot?: string): string {
@@ -236,6 +239,26 @@ server.tool(
     const config = loadConfig(root);
     const violations = scanSource(source, filePath, ctx, config);
     return { content: [{ type: "text" as const, text: formatViolations(violations) }] };
+  }
+);
+
+server.tool(
+  "audit_changed_files",
+  "Scan changed Angular/TS/HTML/SCSS files and return structured best-practice feedback for SoftTech frontend repos.",
+  {
+    changedFiles: z.array(z.string()).describe("Paths relative to workspace root"),
+    workspaceRoot: z.string().optional(),
+    fileContents: z
+      .record(z.string())
+      .optional()
+      .describe("Optional map of path → source when files are not on disk"),
+  },
+  async ({ changedFiles, workspaceRoot, fileContents }) => {
+    const root = resolveWorkspace(workspaceRoot);
+    const ctx = detectAngularContext(root);
+    const config = loadConfig(root);
+    const report = auditChangedFiles(root, changedFiles, ctx, config, fileContents);
+    return { content: [{ type: "text" as const, text: formatAuditReport(report) }] };
   }
 );
 

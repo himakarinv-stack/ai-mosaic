@@ -18,6 +18,9 @@ All branch names and commit messages must follow the structure below.
 | `test` | Tests only |
 | `ci` | CI / GitHub Actions |
 | `release` | Version bumps and publish prep |
+| `perf` | Performance improvement |
+| `build` | Build system / bundler |
+| `style` | Formatting only (no logic change) |
 
 **Examples**
 

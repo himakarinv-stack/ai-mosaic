@@ -8,6 +8,9 @@ const types = [
   "test",
   "ci",
   "release",
+  "perf",
+  "build",
+  "style",
 ];
 
 module.exports = {

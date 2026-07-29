@@ -13,6 +13,8 @@ export type QualityDomain =
   | "security"
   | "testing"
   | "storybook"
+  | "html-css"
+  | "tooling-lint"
   | "review-format"
   | "anti-patterns"
   | "scaffolding"
@@ -32,6 +34,8 @@ const SHARED_FILES: Partial<Record<QualityDomain, string>> = {
   scaffolding: "shared/10-scaffolding.md",
   modernization: "shared/11-modernization.md",
   "git-conventions": "shared/12-git-conventions.md",
+  "html-css": "shared/13-html-css.md",
+  "tooling-lint": "shared/14-tooling-lint.md",
   storybook: "storybook/01-storybook-standards.md",
 };
 
@@ -51,6 +55,8 @@ export const DOMAIN_SUMMARIES: Record<QualityDomain, string> = {
   security: "XSS, sanitization, safe templates, secrets",
   testing: "Behavior-focused tests, state matrix coverage",
   storybook: "Stories, autodocs, controls, isolated presentational components",
+  "html-css": "Semantic HTML, SCSS tokens/mixins, Stylelint expectations",
+  "tooling-lint": "ESLint, Prettier, strict TS, CI lint on SoftTech frontends",
   "review-format": "PR review output structure and severity classes",
   "anti-patterns": "Consolidated reject list for reviews and audits",
   scaffolding: "Feature and component generation conventions",
@@ -104,8 +110,14 @@ export function domainsForExtensions(extensions: string[], hasStorybook: boolean
     domains.add("storybook");
   }
 
-  if (ext.some((e) => [".scss", ".css"].includes(e))) {
+  if (ext.some((e) => [".scss", ".css", ".html"].includes(e))) {
+    domains.add("html-css");
+    domains.add("accessibility");
     domains.add("performance");
+  }
+
+  if (ext.some((e) => [".json", ".yml", ".yaml", ".mjs", ".cjs"].includes(e))) {
+    domains.add("tooling-lint");
   }
 
   return [...domains];
