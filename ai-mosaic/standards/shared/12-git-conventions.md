@@ -1,6 +1,7 @@
 # Git conventions
 
 Branch and commit naming for Angular workspaces using ai-mosaic.
+Aligned with **spring-mosaic** so SoftTech repos share one convention.
 
 ## Agent workflow
 
@@ -13,7 +14,9 @@ Branch and commit naming for Angular workspaces using ai-mosaic.
 
 `<type>/<short-kebab-description>`
 
-Types: feat | fix | chore | docs | refactor | test | ci | release
+Types: feat | fix | chore | docs | refactor | test | ci | release | perf | build | style
+
+Optional ticket: `feat/aim-124-navbar-lazyload`
 
 ## Commit format
 
@@ -26,3 +29,4 @@ Types: feat | fix | chore | docs | refactor | test | ci | release
 ## PR title
 
 Same style as a Conventional Commit subject.
+

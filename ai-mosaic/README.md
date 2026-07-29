@@ -1,8 +1,8 @@
 # ai-mosaic
 
-MCP server for **Angular architecture, code quality, and version-aware development** — acts as reviewer, coder, and architect for **Angular 19+**.
+MCP server that **reviews SoftTech Angular / TypeScript / HTML / SCSS repositories**, returns structured feedback on changes, and acts as reviewer, coder, and architect for **Angular 19+**.
 
-Works with Cursor, GitHub Copilot, Claude Code, and Claude Desktop. Includes first-class **Storybook** guidance.
+Works with Cursor, GitHub Copilot, Claude Code, and Claude Desktop. Includes first-class **Storybook** guidance. Pair with **spring-mosaic** for Java/Spring backends.
 
 ## Install into an Angular repo
 
@@ -69,8 +69,9 @@ Package page: https://github.com/himakarinv-stack/ai-mosaic/pkgs/npm/ai-mosaic
 
 ### 1. PR review
 ```
-detect_angular_context → review_pr_diff → scan_violations → review_architecture
+detect_angular_context → review_pr_diff → audit_changed_files → review_architecture
 ```
+Write human feedback for the author (blockers → low) using `get_pr_review_brief`.
 
 ### 2. Feature scaffolding
 ```
